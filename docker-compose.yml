@@ -1,0 +1,56 @@
+version: '3.9'
+
+services:
+  # ─── Banco de Dados ────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: logistica_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: logistica_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d logistica_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── API (Back-end) ────────────────────────────────────────────
+  backend:
+    build:
+      context: ./apps/backend-api
+      dockerfile: Dockerfile
+    container_name: logistica_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@db:5432/logistica_db
+      JWT_SECRET: jwt_secret_local_dev_2026
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "3333:3333"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ─── Painel Web ────────────────────────────────────────────────
+  web:
+    build:
+      context: ./apps/web-panel
+      dockerfile: Dockerfile
+    container_name: logistica_web
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:3333/api
+      VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:-}
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

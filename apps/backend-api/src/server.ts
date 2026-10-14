@@ -21,7 +21,7 @@ app.use(['/api/checkin', '/api/checkins'], checkinRoutes);
 
 app.get('/api/ping', async (req, res) => {
   try {
-    const usersCount = await prisma.user.count();
+    const usersCount = await prisma.usuario.count();
     return res.json({ status: 'ok', totalUsuarios: usersCount });
   } catch (error) {
     console.error('[GET /api/ping]', error);

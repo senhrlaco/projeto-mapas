@@ -1,9 +1,10 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
 
-// forca url literal para bypass do cache de env
-// adiciona prefixo global da api no mobile
-const BASE_URL = 'https://api-projeto-mapas.onrender.com/api';
+const ENV_URL = process.env.EXPO_PUBLIC_API_URL;
+const BASE_URL = ENV_URL 
+  ? `${ENV_URL.replace(/\/api\/?$/, '').replace(/\/$/, '')}/api` 
+  : 'https://api-projeto-mapas.onrender.com/api';
 
 export const api = axios.create({
   baseURL: BASE_URL,
